@@ -1,0 +1,333 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/products">
+              <i class="fas fa-box"></i> Produtos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/categories">
+              <i class="fas fa-tags"></i> Categorias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/orders">
+              <i class="fas fa-shopping-cart"></i> Pedidos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+              <i class="fas fa-users"></i> Usuários
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">
+              <i class="fas fa-cog"></i> Configurações
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gestão de Pedidos</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportOrders()">
+              <i class="fas fa-download"></i> Exportar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Buscar por cliente..." id="searchInput">
+            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="statusFilter">
+            <option value="">Todos os status</option>
+            <option value="pending">Pendente</option>
+            <option value="paid">Pago</option>
+            <option value="shipped">Enviado</option>
+            <option value="delivered">Entregue</option>
+            <option value="cancelled">Cancelado</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input type="date" class="form-control" id="dateFilter" placeholder="Filtrar por data">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+            <i class="fas fa-times"></i> Limpar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabela de pedidos -->
+      <div class="card shadow">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped" id="ordersTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Data</th>
+                  <th>Pagamento</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% orders.forEach(order => { %>
+                  <tr>
+                    <td>
+                      <strong>#<%= order.id.substring(0, 8) %></strong>
+                    </td>
+                    <td>
+                      <div>
+                        <strong><%= order.customer_name %></strong>
+                        <br>
+                        <small class="text-muted"><%= order.customer_email %></small>
+                      </div>
+                    </td>
+                    <td>
+                      <strong>R$ <%= (order.total_amount ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></strong>
+                      <% if (order.shipping_amount && parseFloat(order.shipping_amount) > 0) { %>
+                        <br>
+                        <small class="text-muted">+ R$ <%= parseFloat(order.shipping_amount).toFixed(2) %> frete</small>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="badge bg-<%= 
+                        order.status === 'paid' ? 'success' : 
+                        order.status === 'pending' ? 'warning' : 
+                        order.status === 'shipped' ? 'info' : 
+                        order.status === 'delivered' ? 'primary' : 'danger' 
+                      %>">
+                        <%= order.status === 'pending' ? 'Pendente' :
+                           order.status === 'paid' ? 'Pago' :
+                           order.status === 'shipped' ? 'Enviado' :
+                           order.status === 'delivered' ? 'Entregue' : 'Cancelado' %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= new Date(order.created_at).toLocaleDateString('pt-BR') %>
+                      <br>
+                      <small class="text-muted">
+                        <%= new Date(order.created_at).toLocaleTimeString('pt-BR') %>
+                      </small>
+                    </td>
+                    <td>
+                      <% if (order.payment_method) { %>
+                        <span class="badge bg-secondary"><%= order.payment_method %></span>
+                      <% } else { %>
+                        <span class="text-muted">-</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <a href="/admin/orders/<%= order.id %>" class="btn btn-sm btn-outline-primary" title="Ver detalhes">
+                          <i class="fas fa-eye"></i>
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-warning" title="Atualizar status"
+                                onclick="updateStatus('<%= order.id %>', '<%= order.status %>')">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paginação -->
+      <% if (totalPages > 1) { %>
+        <nav aria-label="Navegação de páginas" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <% if (currentPage > 1) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage - 1 %>">Anterior</a>
+              </li>
+            <% } %>
+            
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+              </li>
+            <% } %>
+            
+            <% if (currentPage < totalPages) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage + 1 %>">Próxima</a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
+      <% } %>
+    </main>
+  </div>
+</div>
+
+<!-- Modal de atualização de status -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Atualizar Status do Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="statusForm">
+          <div class="mb-3">
+            <label for="newStatus" class="form-label">Novo Status</label>
+            <select class="form-select" id="newStatus" name="status" required>
+              <option value="pending">Pendente</option>
+              <option value="paid">Pago</option>
+              <option value="shipped">Enviado</option>
+              <option value="delivered">Entregue</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="statusNote" class="form-label">Observação (opcional)</label>
+            <textarea class="form-control" id="statusNote" name="note" rows="3" 
+                      placeholder="Adicione uma observação sobre a atualização..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveStatus()">Atualizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.sidebar .nav-link.active {
+  color: #007bff;
+}
+
+.sidebar .nav-link:hover {
+  color: #007bff;
+}
+</style>
+
+<script>
+let currentOrderId = null;
+
+function updateStatus(orderId, currentStatus) {
+  currentOrderId = orderId;
+  document.getElementById('newStatus').value = currentStatus;
+  
+  const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+  statusModal.show();
+}
+
+function saveStatus() {
+  const newStatus = document.getElementById('newStatus').value;
+  const note = document.getElementById('statusNote').value;
+  
+  fetch(`/admin/orders/${currentOrderId}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      status: newStatus,
+      note: note
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Erro ao atualizar status: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    alert('Erro ao atualizar status');
+  });
+}
+
+function exportOrders() {
+  // Implementar exportação de pedidos
+  alert('Funcionalidade de exportação será implementada em breve');
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('statusFilter').value = '';
+  document.getElementById('dateFilter').value = '';
+  filterOrders();
+}
+
+// Filtros
+document.getElementById('searchInput').addEventListener('input', filterOrders);
+document.getElementById('statusFilter').addEventListener('change', filterOrders);
+document.getElementById('dateFilter').addEventListener('change', filterOrders);
+
+function filterOrders() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const statusFilter = document.getElementById('statusFilter').value;
+  const dateFilter = document.getElementById('dateFilter').value;
+  
+  const rows = document.querySelectorAll('#ordersTable tbody tr');
+  
+  rows.forEach(row => {
+    const customerName = row.cells[1].textContent.toLowerCase();
+    const status = row.cells[3].textContent.toLowerCase();
+    const date = row.cells[4].textContent;
+    
+    const matchesSearch = customerName.includes(searchTerm);
+    const matchesStatus = !statusFilter || status.includes(statusFilter);
+    const matchesDate = !dateFilter || date.includes(dateFilter);
+    
+    row.style.display = matchesSearch && matchesStatus && matchesDate ? '' : 'none';
+  });
+}
+</script>
+
+<%- include('../../partials/admin-footer') %>

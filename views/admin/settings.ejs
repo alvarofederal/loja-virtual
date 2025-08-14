@@ -1,0 +1,543 @@
+<%- include('../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/products">
+              <i class="fas fa-box"></i> Produtos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/categories">
+              <i class="fas fa-tags"></i> Categorias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/orders">
+              <i class="fas fa-shopping-cart"></i> Pedidos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+              <i class="fas fa-users"></i> Usuários
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/settings">
+              <i class="fas fa-cog"></i> Configurações
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Configurações do Sistema</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <button type="button" class="btn btn-primary" onclick="saveAllSettings()">
+            <i class="fas fa-save"></i> Salvar Todas as Configurações
+          </button>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Configurações Gerais -->
+        <div class="col-lg-6">
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-store"></i> Configurações Gerais
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="generalSettingsForm">
+                <div class="mb-3">
+                  <label for="storeName" class="form-label">Nome da Loja</label>
+                  <input type="text" class="form-control" id="storeName" name="store_name" 
+                         value="Arte & Tradição" required>
+                </div>
+                <div class="mb-3">
+                  <label for="storeEmail" class="form-label">Email da Loja</label>
+                  <input type="email" class="form-control" id="storeEmail" name="store_email" 
+                         value="contato@arteetradicao.com.br" required>
+                </div>
+                <div class="mb-3">
+                  <label for="storePhone" class="form-label">Telefone da Loja</label>
+                  <input type="tel" class="form-control" id="storePhone" name="store_phone" 
+                         value="(11) 99999-9999">
+                </div>
+                <div class="mb-3">
+                  <label for="storeAddress" class="form-label">Endereço da Loja</label>
+                  <textarea class="form-control" id="storeAddress" name="store_address" rows="3"
+                            placeholder="Endereço completo da loja..."></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="storeDescription" class="form-label">Descrição da Loja</label>
+                  <textarea class="form-control" id="storeDescription" name="store_description" rows="3"
+                            placeholder="Descrição da loja para SEO..."></textarea>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Configurações de Pagamento -->
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-credit-card"></i> Configurações de Pagamento
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="paymentSettingsForm">
+                <div class="mb-3">
+                  <label for="mercadopagoToken" class="form-label">Token do Mercado Pago</label>
+                  <input type="text" class="form-control" id="mercadopagoToken" name="mercadopago_token" 
+                         value="TEST-123456789" required>
+                  <div class="form-text">Token de acesso do Mercado Pago</div>
+                </div>
+                <div class="mb-3">
+                  <label for="mercadopagoPublicKey" class="form-label">Chave Pública do Mercado Pago</label>
+                  <input type="text" class="form-control" id="mercadopagoPublicKey" name="mercadopago_public_key" 
+                         value="TEST-123456789">
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enableMercadoPago" name="enable_mercadopago" checked>
+                    <label class="form-check-label" for="enableMercadoPago">
+                      Habilitar Mercado Pago
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enablePix" name="enable_pix" checked>
+                    <label class="form-check-label" for="enablePix">
+                      Habilitar PIX
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enableBoleto" name="enable_boleto" checked>
+                    <label class="form-check-label" for="enableBoleto">
+                      Habilitar Boleto
+                    </label>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configurações de Email -->
+        <div class="col-lg-6">
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-envelope"></i> Configurações de Email
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="emailSettingsForm">
+                <div class="mb-3">
+                  <label for="emailHost" class="form-label">Servidor SMTP</label>
+                  <input type="text" class="form-control" id="emailHost" name="email_host" 
+                         value="smtp.gmail.com">
+                </div>
+                <div class="mb-3">
+                  <label for="emailPort" class="form-label">Porta SMTP</label>
+                  <input type="number" class="form-control" id="emailPort" name="email_port" 
+                         value="587">
+                </div>
+                <div class="mb-3">
+                  <label for="emailUser" class="form-label">Usuário do Email</label>
+                  <input type="email" class="form-control" id="emailUser" name="email_user" 
+                         value="contato@arteetradicao.com.br">
+                </div>
+                <div class="mb-3">
+                  <label for="emailPassword" class="form-label">Senha do Email</label>
+                  <input type="password" class="form-control" id="emailPassword" name="email_password" 
+                         placeholder="Senha do email">
+                  <div class="form-text">Para Gmail, use uma senha de aplicativo</div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enableEmailNotifications" name="enable_email_notifications" checked>
+                    <label class="form-check-label" for="enableEmailNotifications">
+                      Habilitar Notificações por Email
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <button type="button" class="btn btn-outline-primary" onclick="testEmail()">
+                    <i class="fas fa-paper-plane"></i> Testar Configuração de Email
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Configurações de Frete -->
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-truck"></i> Configurações de Frete
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="shippingSettingsForm">
+                <div class="mb-3">
+                  <label for="defaultShippingCost" class="form-label">Custo Padrão do Frete (R$)</label>
+                  <input type="number" class="form-control" id="defaultShippingCost" name="default_shipping_cost" 
+                         value="15.00" step="0.01" min="0">
+                </div>
+                <div class="mb-3">
+                  <label for="freeShippingThreshold" class="form-label">Valor para Frete Grátis (R$)</label>
+                  <input type="number" class="form-control" id="freeShippingThreshold" name="free_shipping_threshold" 
+                         value="100.00" step="0.01" min="0">
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enableFreeShipping" name="enable_free_shipping" checked>
+                    <label class="form-check-label" for="enableFreeShipping">
+                      Habilitar Frete Grátis
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enableShippingCalculation" name="enable_shipping_calculation" checked>
+                    <label class="form-check-label" for="enableShippingCalculation">
+                      Calcular Frete por CEP
+                    </label>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Configurações de Segurança -->
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-shield-alt"></i> Configurações de Segurança
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="securitySettingsForm">
+                <div class="mb-3">
+                  <label for="sessionTimeout" class="form-label">Timeout da Sessão (minutos)</label>
+                  <input type="number" class="form-control" id="sessionTimeout" name="session_timeout" 
+                         value="30" min="5" max="1440">
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enableTwoFactor" name="enable_two_factor">
+                    <label class="form-check-label" for="enableTwoFactor">
+                      Habilitar Autenticação de Dois Fatores
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enableLoginNotifications" name="enable_login_notifications" checked>
+                    <label class="form-check-label" for="enableLoginNotifications">
+                      Notificar Logins Suspeitos
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enableRateLimiting" name="enable_rate_limiting" checked>
+                    <label class="form-check-label" for="enableRateLimiting">
+                      Habilitar Limitação de Taxa
+                    </label>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Backup e Manutenção -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card shadow">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-database"></i> Backup e Manutenção
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6>Backup do Sistema</h6>
+                  <p class="text-muted">Faça backup dos dados do sistema</p>
+                  <button type="button" class="btn btn-outline-primary" onclick="createBackup()">
+                    <i class="fas fa-download"></i> Criar Backup
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" onclick="restoreBackup()">
+                    <i class="fas fa-upload"></i> Restaurar Backup
+                  </button>
+                </div>
+                <div class="col-md-6">
+                  <h6>Manutenção</h6>
+                  <p class="text-muted">Modo de manutenção para atualizações</p>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="maintenanceMode" name="maintenance_mode">
+                    <label class="form-check-label" for="maintenanceMode">
+                      Modo de Manutenção
+                    </label>
+                  </div>
+                  <button type="button" class="btn btn-outline-warning mt-2" onclick="clearCache()">
+                    <i class="fas fa-broom"></i> Limpar Cache
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<style>
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.sidebar .nav-link.active {
+  color: #007bff;
+}
+
+.sidebar .nav-link:hover {
+  color: #007bff;
+}
+</style>
+
+<script>
+function saveAllSettings() {
+  // Coletar dados de todos os formulários
+  const generalData = new FormData(document.getElementById('generalSettingsForm'));
+  const paymentData = new FormData(document.getElementById('paymentSettingsForm'));
+  const emailData = new FormData(document.getElementById('emailSettingsForm'));
+  const shippingData = new FormData(document.getElementById('shippingSettingsForm'));
+  const securityData = new FormData(document.getElementById('securitySettingsForm'));
+
+  // Combinar todos os dados
+  const allData = {
+    ...Object.fromEntries(generalData.entries()),
+    ...Object.fromEntries(paymentData.entries()),
+    ...Object.fromEntries(emailData.entries()),
+    ...Object.fromEntries(shippingData.entries()),
+    ...Object.fromEntries(securityData.entries()),
+    maintenance_mode: document.getElementById('maintenanceMode').checked
+  };
+
+  // Enviar para o servidor
+  fetch('/admin/settings', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(allData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Configurações salvas com sucesso!');
+    } else {
+      alert('Erro ao salvar configurações: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    alert('Erro ao salvar configurações');
+  });
+}
+
+function testEmail() {
+  const emailData = new FormData(document.getElementById('emailSettingsForm'));
+  const data = Object.fromEntries(emailData.entries());
+
+  fetch('/admin/settings/test-email', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Email de teste enviado com sucesso!');
+    } else {
+      alert('Erro ao enviar email de teste: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    alert('Erro ao enviar email de teste');
+  });
+}
+
+function createBackup() {
+  if (confirm('Deseja criar um backup do sistema? Esta operação pode demorar alguns minutos.')) {
+    fetch('/admin/settings/backup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Backup criado com sucesso!');
+        // Opcional: fazer download do arquivo
+        if (data.downloadUrl) {
+          window.open(data.downloadUrl, '_blank');
+        }
+      } else {
+        alert('Erro ao criar backup: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao criar backup');
+    });
+  }
+}
+
+function restoreBackup() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.sql,.zip';
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      if (confirm('Deseja restaurar o backup? Esta operação irá substituir todos os dados atuais.')) {
+        const formData = new FormData();
+        formData.append('backup', file);
+
+        fetch('/admin/settings/restore', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Backup restaurado com sucesso!');
+            location.reload();
+          } else {
+            alert('Erro ao restaurar backup: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+          alert('Erro ao restaurar backup');
+        });
+      }
+    }
+  };
+  input.click();
+}
+
+function clearCache() {
+  if (confirm('Deseja limpar o cache do sistema?')) {
+    fetch('/admin/settings/clear-cache', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Cache limpo com sucesso!');
+      } else {
+        alert('Erro ao limpar cache: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao limpar cache');
+    });
+  }
+}
+
+// Carregar configurações atuais
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('/admin/settings')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Preencher formulários com dados atuais
+        const settings = data.settings;
+        
+        // Configurações gerais
+        if (settings.store_name) document.getElementById('storeName').value = settings.store_name;
+        if (settings.store_email) document.getElementById('storeEmail').value = settings.store_email;
+        if (settings.store_phone) document.getElementById('storePhone').value = settings.store_phone;
+        if (settings.store_address) document.getElementById('storeAddress').value = settings.store_address;
+        if (settings.store_description) document.getElementById('storeDescription').value = settings.store_description;
+        
+        // Configurações de pagamento
+        if (settings.mercadopago_token) document.getElementById('mercadopagoToken').value = settings.mercadopago_token;
+        if (settings.mercadopago_public_key) document.getElementById('mercadopagoPublicKey').value = settings.mercadopago_public_key;
+        if (settings.enable_mercadopago !== undefined) document.getElementById('enableMercadoPago').checked = settings.enable_mercadopago;
+        if (settings.enable_pix !== undefined) document.getElementById('enablePix').checked = settings.enable_pix;
+        if (settings.enable_boleto !== undefined) document.getElementById('enableBoleto').checked = settings.enable_boleto;
+        
+        // Configurações de email
+        if (settings.email_host) document.getElementById('emailHost').value = settings.email_host;
+        if (settings.email_port) document.getElementById('emailPort').value = settings.email_port;
+        if (settings.email_user) document.getElementById('emailUser').value = settings.email_user;
+        if (settings.enable_email_notifications !== undefined) document.getElementById('enableEmailNotifications').checked = settings.enable_email_notifications;
+        
+        // Configurações de frete
+        if (settings.default_shipping_cost) document.getElementById('defaultShippingCost').value = settings.default_shipping_cost;
+        if (settings.free_shipping_threshold) document.getElementById('freeShippingThreshold').value = settings.free_shipping_threshold;
+        if (settings.enable_free_shipping !== undefined) document.getElementById('enableFreeShipping').checked = settings.enable_free_shipping;
+        if (settings.enable_shipping_calculation !== undefined) document.getElementById('enableShippingCalculation').checked = settings.enable_shipping_calculation;
+        
+        // Configurações de segurança
+        if (settings.session_timeout) document.getElementById('sessionTimeout').value = settings.session_timeout;
+        if (settings.enable_two_factor !== undefined) document.getElementById('enableTwoFactor').checked = settings.enable_two_factor;
+        if (settings.enable_login_notifications !== undefined) document.getElementById('enableLoginNotifications').checked = settings.enable_login_notifications;
+        if (settings.enable_rate_limiting !== undefined) document.getElementById('enableRateLimiting').checked = settings.enable_rate_limiting;
+        
+        // Modo de manutenção
+        if (settings.maintenance_mode !== undefined) document.getElementById('maintenanceMode').checked = settings.maintenance_mode;
+      }
+    })
+    .catch(error => {
+      console.error('Erro ao carregar configurações:', error);
+    });
+});
+</script>
+
+<%- include('../partials/admin-footer') %>

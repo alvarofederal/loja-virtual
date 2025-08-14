@@ -1,0 +1,279 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/products">
+              <i class="fas fa-box"></i> Produtos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/categories">
+              <i class="fas fa-tags"></i> Categorias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/orders">
+              <i class="fas fa-shopping-cart"></i> Pedidos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+              <i class="fas fa-users"></i> Usuários
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">
+              <i class="fas fa-cog"></i> Configurações
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gestão de Produtos</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/products/new" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Novo Produto
+          </a>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Buscar produtos..." id="searchInput">
+            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="categoryFilter">
+            <option value="">Todas as categorias</option>
+            <% categories.forEach(category => { %>
+              <option value="<%= category.id %>"><%= category.name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="statusFilter">
+            <option value="">Todos os status</option>
+            <option value="active">Ativos</option>
+            <option value="inactive">Inativos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabela de produtos -->
+      <div class="card shadow">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped" id="productsTable">
+              <thead>
+                <tr>
+                  <th>Imagem</th>
+                  <th>Nome</th>
+                  <th>Categoria</th>
+                  <th>Preço</th>
+                  <th>Estoque</th>
+                  <th>Status</th>
+                  <th>Destaque</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% products.forEach(product => { %>
+                  <tr>
+                    <td>
+                      <% if (product.image) { %>
+                        <img src="/admin/products/<%= product.id %>/image" alt="<%= product.name %>" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                      <% } else { %>
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                          <i class="fas fa-image text-muted"></i>
+                        </div>
+                      <% } %>
+                    </td>
+                    <td>
+                      <strong><%= product.name %></strong>
+                      <br>
+                      <small class="text-muted">SKU: <%= product.sku || 'N/A' %></small>
+                    </td>
+                    <td>
+                      <span class="badge bg-secondary"><%= product.category ? product.category.name : 'Sem categoria' %></span>
+                    </td>
+                    <td>
+                      <strong>R$ <%= parseFloat(product.price).toFixed(2) %></strong>
+                      <% if (product.compare_price && product.compare_price > product.price) { %>
+                        <br>
+                        <small class="text-muted text-decoration-line-through">
+                          R$ <%= parseFloat(product.compare_price).toFixed(2) %>
+                        </small>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="badge bg-<%= product.stock_quantity > 10 ? 'success' : product.stock_quantity > 0 ? 'warning' : 'danger' %>">
+                        <%= product.stock_quantity %>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge bg-<%= product.is_active ? 'success' : 'danger' %>">
+                        <%= product.is_active ? 'Ativo' : 'Inativo' %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if (product.is_featured) { %>
+                        <span class="badge bg-warning">Destaque</span>
+                      <% } %>
+                      <% if (product.is_bestseller) { %>
+                        <span class="badge bg-info">Mais Vendido</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <a href="/admin/products/<%= product.id %>" class="btn btn-sm btn-outline-primary" title="Ver">
+                          <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="/admin/products/<%= product.id %>/edit" class="btn btn-sm btn-outline-warning" title="Editar">
+                          <i class="fas fa-edit"></i>
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger" title="Excluir" 
+                                onclick="deleteProduct('<%= product.id %>', '<%= product.name %>')">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paginação -->
+      <% if (totalPages > 1) { %>
+        <nav aria-label="Navegação de páginas" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <% if (currentPage > 1) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage - 1 %>">Anterior</a>
+              </li>
+            <% } %>
+            
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+              </li>
+            <% } %>
+            
+            <% if (currentPage < totalPages) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage + 1 %>">Próxima</a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
+      <% } %>
+    </main>
+  </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o produto "<span id="productName"></span>"?</p>
+        <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form id="deleteForm" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-danger">Excluir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.sidebar .nav-link.active {
+  color: #007bff;
+}
+
+.sidebar .nav-link:hover {
+  color: #007bff;
+}
+</style>
+
+<script>
+function deleteProduct(productId, productName) {
+  document.getElementById('productName').textContent = productName;
+  document.getElementById('deleteForm').action = `/admin/products/${productId}/delete`;
+  
+  const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+  deleteModal.show();
+}
+
+// Filtros
+document.getElementById('searchInput').addEventListener('input', filterProducts);
+document.getElementById('categoryFilter').addEventListener('change', filterProducts);
+document.getElementById('statusFilter').addEventListener('change', filterProducts);
+
+function filterProducts() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const categoryFilter = document.getElementById('categoryFilter').value;
+  const statusFilter = document.getElementById('statusFilter').value;
+  
+  const rows = document.querySelectorAll('#productsTable tbody tr');
+  
+  rows.forEach(row => {
+    const name = row.cells[1].textContent.toLowerCase();
+    const category = row.cells[2].textContent;
+    const status = row.cells[5].textContent;
+    
+    const matchesSearch = name.includes(searchTerm);
+    const matchesCategory = !categoryFilter || category.includes(categoryFilter);
+    const matchesStatus = !statusFilter || 
+      (statusFilter === 'active' && status.includes('Ativo')) ||
+      (statusFilter === 'inactive' && status.includes('Inativo'));
+    
+    row.style.display = matchesSearch && matchesCategory && matchesStatus ? '' : 'none';
+  });
+}
+</script>
+
+<%- include('../../partials/admin-footer') %>

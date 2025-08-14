@@ -1,0 +1,101 @@
+<%- include('partials/header') %>
+
+<div class="container">
+    <h1 class="text-center mb-4">Entre em Contato</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Envie sua Mensagem</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Nome:</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email:</label>
+                                <input type="email" id="email" name="email" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Assunto:</label>
+                            <input type="text" id="subject" name="subject" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Mensagem:</label>
+                            <textarea id="message" name="message" class="form-control" rows="5" required></textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Enviar Mensagem
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Informações de Contato</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-envelope text-primary me-2"></i>
+                        <strong>Email:</strong><br>
+                        contato@lojavirtual.com
+                    </div>
+                    
+                    <div class="mb-3">
+                        <i class="fas fa-phone text-primary me-2"></i>
+                        <strong>Telefone:</strong><br>
+                        (11) 99999-9999
+                    </div>
+                    
+                    <div class="mb-3">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        <strong>Endereço:</strong><br>
+                        Rua das Flores, 123<br>
+                        São Paulo, SP - 01234-567
+                    </div>
+                    
+                    <div class="mb-3">
+                        <i class="fas fa-clock text-primary me-2"></i>
+                        <strong>Horário de Atendimento:</strong><br>
+                        Segunda a Sexta: 8h às 18h<br>
+                        Sábado: 8h às 12h
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Redes Sociais</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </a>
+                        <a href="#" class="btn btn-outline-info">
+                            <i class="fab fa-instagram"></i> Instagram
+                        </a>
+                        <a href="#" class="btn btn-outline-dark">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %> 

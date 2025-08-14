@@ -1,0 +1,124 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Início</a></li>
+            <li class="breadcrumb-item"><a href="/orders">Pedidos</a></li>
+                         <li class="breadcrumb-item active" aria-current="page">Pedido <%= order.order_number %></li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                                         <h3 class="mb-0">
+                         <i class="fas fa-receipt"></i> Pedido <%= order.order_number %>
+                     </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Informações do Cliente</h5>
+                            <p><strong>Nome:</strong> <%= order.customer_name %></p>
+                            <p><strong>Email:</strong> <%= order.customer_email %></p>
+                            <p><strong>Telefone:</strong> <%= order.customer_phone %></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Endereço de Entrega</h5>
+                            <p><%= order.shipping_address %></p>
+                            <p><%= order.shipping_city %>, <%= order.shipping_state %></p>
+                            <p>CEP: <%= order.shipping_zip_code %></p>
+                        </div>
+                    </div>
+
+                    <h5>Itens do Pedido</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Preço</th>
+                                    <th>Quantidade</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% order.items.forEach(item => { %>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                                                                 <% if (item.product && item.product.image) { %>
+                                                     <img src="/products/<%= item.product_id %>/image" 
+                                                          alt="<%= item.product_name %>" 
+                                                          class="me-3" 
+                                                          style="width: 50px; height: 50px; object-fit: cover;"
+                                                          onerror="this.src='https://via.placeholder.com/50x50?text=Produto'">
+                                                 <% } else { %>
+                                                     <img src="https://via.placeholder.com/50x50?text=Produto" 
+                                                          alt="<%= item.product_name %>" 
+                                                          class="me-3" 
+                                                          style="width: 50px; height: 50px; object-fit: cover;">
+                                                 <% } %>
+                                                                                                 <div>
+                                                     <strong><%= item.product_name %></strong>
+                                                 </div>
+                                            </div>
+                                        </td>
+                                        <td>R$ <%= parseFloat(item.unit_price).toFixed(2) %></td>
+                                        <td><%= item.quantity %></td>
+                                        <td>R$ <%= parseFloat(item.total_price).toFixed(2) %></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-end">
+                        <h4>Total: R$ <%= (order.total_amount ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Status do Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Status:</strong> 
+                        <span class="badge badge-<%= order.status === 'pending' ? 'warning' : 
+                                                   order.status === 'processing' ? 'info' : 
+                                                   order.status === 'shipped' ? 'primary' : 
+                                                   order.status === 'delivered' ? 'success' : 
+                                                   order.status === 'cancelled' ? 'danger' : 'secondary' %>">
+                            <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                        </span>
+                    </p>
+                    <p><strong>Data do Pedido:</strong> <%= new Date(order.created_at).toLocaleDateString('pt-BR') %></p>
+                    <p><strong>Número do Pedido:</strong> <%= order.order_number %></p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Ações</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/orders" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar aos Pedidos
+                        </a>
+                        <a href="/" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Voltar ao Início
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

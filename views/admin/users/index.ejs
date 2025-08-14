@@ -1,0 +1,470 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/products">
+              <i class="fas fa-box"></i> Produtos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/categories">
+              <i class="fas fa-tags"></i> Categorias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/orders">
+              <i class="fas fa-shopping-cart"></i> Pedidos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/users">
+              <i class="fas fa-users"></i> Usuários
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">
+              <i class="fas fa-cog"></i> Configurações
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gestão de Usuários</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <button type="button" class="btn btn-primary" onclick="showCreateUserModal()">
+            <i class="fas fa-plus"></i> Novo Usuário
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Buscar usuários..." id="searchInput">
+            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="roleFilter">
+            <option value="">Todos os roles</option>
+            <option value="user">Usuário</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="statusFilter">
+            <option value="">Todos os status</option>
+            <option value="active">Ativos</option>
+            <option value="inactive">Inativos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabela de usuários -->
+      <div class="card shadow">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped" id="usersTable">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Último Login</th>
+                  <th>Data de Cadastro</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% users.forEach(user => { %>
+                  <tr>
+                    <td>
+                      <div>
+                        <strong><%= user.name %></strong>
+                        <% if (user.phone) { %>
+                          <br>
+                          <small class="text-muted"><%= user.phone %></small>
+                        <% } %>
+                      </div>
+                    </td>
+                    <td><%= user.email %></td>
+                    <td>
+                      <span class="badge bg-<%= user.role === 'admin' ? 'danger' : 'secondary' %>">
+                        <%= user.role === 'admin' ? 'Administrador' : 'Usuário' %>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge bg-<%= user.is_active ? 'success' : 'danger' %>">
+                        <%= user.is_active ? 'Ativo' : 'Inativo' %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if (user.last_login) { %>
+                        <%= new Date(user.last_login).toLocaleDateString('pt-BR') %>
+                        <br>
+                        <small class="text-muted">
+                          <%= new Date(user.last_login).toLocaleTimeString('pt-BR') %>
+                        </small>
+                      <% } else { %>
+                        <span class="text-muted">Nunca</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <%= new Date(user.created_at).toLocaleDateString('pt-BR') %>
+                    </td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-warning" title="Editar"
+                                onclick="editUser('<%= user.id %>', '<%= user.name %>', '<%= user.email %>', '<%= user.role %>')">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-<%= user.is_active ? 'outline-danger' : 'outline-success' %>" 
+                                title="<%= user.is_active ? 'Desativar' : 'Ativar' %>"
+                                onclick="toggleUserStatus('<%= user.id %>', '<%= user.name %>', <%= user.is_active %>)">
+                          <i class="fas fa-<%= user.is_active ? 'times' : 'check' %>"></i>
+                        </button>
+                        <% if (user.role !== 'admin' || users.length > 1) { %>
+                          <button type="button" class="btn btn-sm btn-outline-danger" title="Excluir"
+                                  onclick="deleteUser('<%= user.id %>', '<%= user.name %>')">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        <% } %>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paginação -->
+      <% if (totalPages > 1) { %>
+        <nav aria-label="Navegação de páginas" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <% if (currentPage > 1) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage - 1 %>">Anterior</a>
+              </li>
+            <% } %>
+            
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+              </li>
+            <% } %>
+            
+            <% if (currentPage < totalPages) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage + 1 %>">Próxima</a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
+      <% } %>
+    </main>
+  </div>
+</div>
+
+<!-- Modal de criação/edição de usuário -->
+<div class="modal fade" id="userModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="userModalTitle">Novo Usuário</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="userForm">
+          <input type="hidden" id="userId" name="id">
+          <div class="mb-3">
+            <label for="userName" class="form-label">Nome *</label>
+            <input type="text" class="form-control" id="userName" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="userEmail" class="form-label">Email *</label>
+            <input type="email" class="form-control" id="userEmail" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="userPhone" class="form-label">Telefone</label>
+            <input type="tel" class="form-control" id="userPhone" name="phone">
+          </div>
+          <div class="mb-3">
+            <label for="userRole" class="form-label">Role *</label>
+            <select class="form-select" id="userRole" name="role" required>
+              <option value="user">Usuário</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div class="mb-3" id="passwordSection">
+            <label for="userPassword" class="form-label">Senha *</label>
+            <input type="password" class="form-control" id="userPassword" name="password">
+            <div class="form-text">Deixe em branco para manter a senha atual (ao editar)</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveUser()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o usuário "<span id="userNameToDelete"></span>"?</p>
+        <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" onclick="confirmDeleteUser()">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.sidebar .nav-link.active {
+  color: #007bff;
+}
+
+.sidebar .nav-link:hover {
+  color: #007bff;
+}
+</style>
+
+<script>
+let currentUserId = null;
+let isEditing = false;
+
+function showCreateUserModal() {
+  isEditing = false;
+  document.getElementById('userModalTitle').textContent = 'Novo Usuário';
+  document.getElementById('userForm').reset();
+  document.getElementById('userId').value = '';
+  document.getElementById('passwordSection').style.display = 'block';
+  document.getElementById('userPassword').required = true;
+  
+  const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+  userModal.show();
+}
+
+function editUser(userId, name, email, role) {
+  isEditing = true;
+  currentUserId = userId;
+  
+  document.getElementById('userModalTitle').textContent = 'Editar Usuário';
+  document.getElementById('userId').value = userId;
+  document.getElementById('userName').value = name;
+  document.getElementById('userEmail').value = email;
+  document.getElementById('userRole').value = role;
+  document.getElementById('passwordSection').style.display = 'block';
+  document.getElementById('userPassword').required = false;
+  
+  const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+  userModal.show();
+}
+
+function saveUser() {
+  const form = document.getElementById('userForm');
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  
+  // Log dos dados para debug
+  console.log('Dados do formulário:', data);
+  console.log('Modo de edição:', isEditing);
+  console.log('ID do usuário atual:', currentUserId);
+  
+  // Validação básica
+  if (!data.name || !data.email || !data.role) {
+    alert('Por favor, preencha todos os campos obrigatórios');
+    return;
+  }
+  
+  if (!isEditing && (!data.password || data.password.trim() === '')) {
+    alert('Por favor, insira uma senha para o novo usuário');
+    return;
+  }
+  
+  if (isEditing) {
+    // Atualizar usuário existente
+    console.log('Atualizando usuário:', currentUserId);
+    fetch(`/admin/users/${currentUserId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => {
+      console.log('Resposta do servidor:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('Dados da resposta:', data);
+      if (data.success) {
+        alert('Usuário atualizado com sucesso!');
+        location.reload();
+      } else {
+        alert('Erro ao atualizar usuário: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro na requisição:', error);
+      alert('Erro ao atualizar usuário. Verifique o console para mais detalhes.');
+    });
+  } else {
+    // Criar novo usuário
+    console.log('Criando novo usuário');
+    fetch('/admin/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => {
+      console.log('Resposta do servidor:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('Dados da resposta:', data);
+      if (data.success) {
+        alert('Usuário criado com sucesso!');
+        location.reload();
+      } else {
+        alert('Erro ao criar usuário: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro na requisição:', error);
+      alert('Erro ao criar usuário. Verifique o console para mais detalhes.');
+    });
+  }
+}
+
+function toggleUserStatus(userId, userName, currentStatus) {
+  const action = currentStatus ? 'desativar' : 'ativar';
+  if (confirm(`Tem certeza que deseja ${action} o usuário "${userName}"?`)) {
+    fetch(`/admin/users/${userId}/toggle-status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Erro ao alterar status: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao alterar status');
+    });
+  }
+}
+
+function deleteUser(userId, userName) {
+  currentUserId = userId;
+  document.getElementById('userNameToDelete').textContent = userName;
+  
+  const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+  deleteModal.show();
+}
+
+function confirmDeleteUser() {
+  fetch(`/admin/users/${currentUserId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Erro ao excluir usuário: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    alert('Erro ao excluir usuário');
+  });
+}
+
+// Filtros
+document.getElementById('searchInput').addEventListener('input', filterUsers);
+document.getElementById('roleFilter').addEventListener('change', filterUsers);
+document.getElementById('statusFilter').addEventListener('change', filterUsers);
+
+function filterUsers() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const roleFilter = document.getElementById('roleFilter').value;
+  const statusFilter = document.getElementById('statusFilter').value;
+  
+  const rows = document.querySelectorAll('#usersTable tbody tr');
+  
+  rows.forEach(row => {
+    const name = row.cells[0].textContent.toLowerCase();
+    const email = row.cells[1].textContent.toLowerCase();
+    const role = row.cells[2].textContent.toLowerCase();
+    const status = row.cells[3].textContent.toLowerCase();
+    
+    const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+    const matchesRole = !roleFilter || role.includes(roleFilter);
+    const matchesStatus = !statusFilter || 
+      (statusFilter === 'active' && status.includes('ativo')) ||
+      (statusFilter === 'inactive' && status.includes('inativo'));
+    
+    row.style.display = matchesSearch && matchesRole && matchesStatus ? '' : 'none';
+  });
+}
+</script>
+
+<%- include('../../partials/admin-footer') %>

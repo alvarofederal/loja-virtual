@@ -1,0 +1,195 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Início</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Acompanhar Pedido <%= order.order_number %></li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-truck"></i> Acompanhar Pedido <%= order.order_number %>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Timeline de Status -->
+                    <div class="timeline">
+                        <div class="timeline-item <%= order.status === 'pending' || order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered' ? 'active' : '' %>">
+                            <div class="timeline-marker">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h5>Pedido Realizado</h5>
+                                <p>Seu pedido foi recebido e está sendo processado</p>
+                                <small class="text-muted"><%= new Date(order.created_at).toLocaleDateString('pt-BR') %></small>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item <%= order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered' ? 'active' : '' %>">
+                            <div class="timeline-marker">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h5>Em Processamento</h5>
+                                <p>Seu pedido está sendo preparado para envio</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item <%= order.status === 'shipped' || order.status === 'delivered' ? 'active' : '' %>">
+                            <div class="timeline-marker">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h5>Enviado</h5>
+                                <p>Seu pedido foi enviado e está a caminho</p>
+                                <% if (order.tracking_number) { %>
+                                    <p><strong>Rastreamento:</strong> <%= order.tracking_number %></p>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item <%= order.status === 'delivered' ? 'active' : '' %>">
+                            <div class="timeline-marker">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h5>Entregue</h5>
+                                <p>Seu pedido foi entregue com sucesso!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Atual -->
+                    <div class="alert alert-info mt-4">
+                        <h5><i class="fas fa-info-circle"></i> Status Atual</h5>
+                        <p class="mb-0">
+                            <strong>Status:</strong> 
+                            <span class="badge badge-<%= order.status === 'pending' ? 'warning' : 
+                                                   order.status === 'processing' ? 'info' : 
+                                                   order.status === 'shipped' ? 'primary' : 
+                                                   order.status === 'delivered' ? 'success' : 
+                                                   order.status === 'cancelled' ? 'danger' : 'secondary' %>">
+                                <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Informações do Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Número:</strong> <%= order.order_number %></p>
+                    <p><strong>Data:</strong> <%= new Date(order.created_at).toLocaleDateString('pt-BR') %></p>
+                    <p><strong>Total:</strong> R$ <%= (order.total_amount ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></p>
+                    <p><strong>Itens:</strong> <%= order.items ? order.items.length : 0 %></p>
+                    
+                    <% if (order.tracking_number) { %>
+                        <hr>
+                        <h6>Informações de Rastreamento</h6>
+                        <p><strong>Código:</strong> <%= order.tracking_number %></p>
+                        <% if (order.tracking_url) { %>
+                            <a href="<%= order.tracking_url %>" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt"></i> Rastrear
+                            </a>
+                        <% } %>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Endereço de Entrega</h5>
+                </div>
+                <div class="card-body">
+                    <p><%= order.shipping_address %></p>
+                    <p><%= order.shipping_city %>, <%= order.shipping_state %></p>
+                    <p>CEP: <%= order.shipping_zip_code %></p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Ações</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Voltar ao Início
+                        </a>
+                        <a href="/products" class="btn btn-outline-secondary">
+                            <i class="fas fa-shopping-bag"></i> Continuar Comprando
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+    padding-left: 60px;
+}
+
+.timeline-item.active .timeline-marker {
+    background: #007bff;
+    color: white;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 20px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.timeline-content h5 {
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.timeline-content p {
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.timeline-content small {
+    font-size: 12px;
+}
+</style>
+
+<%- include('../partials/footer') %>

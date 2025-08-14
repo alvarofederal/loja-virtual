@@ -1,0 +1,62 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus"></i> Adicionar Novo Produto
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form action="/products" method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nome do Produto *</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Preço *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" id="price" name="price" class="form-control" 
+                                       step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descrição *</label>
+                            <textarea id="description" name="description" class="form-control" 
+                                      rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Categoria *</label>
+                            <select id="category" name="category" class="form-control" required>
+                                <option value="">Selecione uma categoria</option>
+                                <option value="eletronicos">Eletrônicos</option>
+                                <option value="roupas">Roupas</option>
+                                <option value="casa">Casa e Jardim</option>
+                                <option value="esporte">Esporte</option>
+                                <option value="livros">Livros</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Produto
+                            </button>
+                            <a href="/products" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar aos Produtos
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %> 

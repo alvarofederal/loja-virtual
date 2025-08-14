@@ -1,0 +1,252 @@
+<%- include('../partials/admin-header') %>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Main content -->
+    <main class="col-12">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Exportar</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">Imprimir</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards de estatísticas -->
+      <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                    Vendas (Mês)
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">R$ <%= totalSales || '0,00' %></div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                    Pedidos (Hoje)
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800"><%= todayOrders || 0 %></div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                    Produtos
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800"><%= totalProducts || 0 %></div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-box fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                    Usuários
+                  </div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800"><%= totalUsers || 0 %></div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-users fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráficos e tabelas -->
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Vendas dos Últimos 7 Dias</h6>
+            </div>
+            <div class="card-body">
+              <div class="chart-area">
+                <canvas id="salesChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Produtos Mais Vendidos</h6>
+            </div>
+            <div class="card-body">
+              <% if (topProducts && topProducts.length > 0) { %>
+                <% topProducts.forEach(product => { %>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span><%= product.name %></span>
+                    <span class="badge bg-primary"><%= product.sales %></span>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <p class="text-muted">Nenhum produto vendido ainda.</p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pedidos recentes -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Pedidos Recentes</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (recentOrders && recentOrders.length > 0) { %>
+                  <% recentOrders.forEach(order => { %>
+                    <tr>
+                      <td><%= order.id.substring(0, 8) %></td>
+                      <td><%= order.customer_name %></td>
+                                              <td>R$ <%= (order.total_amount ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></td>
+                      <td>
+                        <span class="badge bg-<%= order.status === 'paid' ? 'success' : order.status === 'pending' ? 'warning' : 'secondary' %>">
+                          <%= order.status %>
+                        </span>
+                      </td>
+                      <td><%= new Date(order.created_at).toLocaleDateString('pt-BR') %></td>
+                      <td>
+                        <a href="/admin/orders/<%= order.id %>" class="btn btn-sm btn-primary">
+                          <i class="fas fa-eye"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="6" class="text-center">Nenhum pedido encontrado.</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<style>
+.border-left-primary {
+  border-left: .25rem solid #4e73df!important;
+}
+
+.border-left-success {
+  border-left: .25rem solid #1cc88a!important;
+}
+
+.border-left-info {
+  border-left: .25rem solid #36b9cc!important;
+}
+
+.border-left-warning {
+  border-left: .25rem solid #f6c23e!important;
+}
+
+.chart-area {
+  position: relative;
+  height: 20rem;
+  width: 100%;
+}
+
+.text-xs {
+  font-size: 0.7rem;
+}
+
+.font-weight-bold {
+  font-weight: 700;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.text-gray-800 {
+  color: #5a5c69!important;
+}
+
+.text-gray-300 {
+  color: #dddfeb!important;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Gráfico de vendas
+const ctx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+    datasets: [{
+      label: 'Vendas (R$)',
+      data: [1200, 1900, 3000, 5000, 2000, 3000, 4000],
+      borderColor: '#4e73df',
+      backgroundColor: 'rgba(78, 115, 223, 0.05)',
+      tension: 0.4
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  }
+});
+</script>
+
+<%- include('../partials/admin-footer') %>

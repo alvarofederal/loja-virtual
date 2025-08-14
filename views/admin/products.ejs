@@ -1,0 +1,270 @@
+<%- include('../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+      <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+              <i class="fas fa-users"></i> Usuários
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/products">
+              <i class="fas fa-box"></i> Produtos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/categories">
+              <i class="fas fa-tags"></i> Categorias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/orders">
+              <i class="fas fa-shopping-cart"></i> Pedidos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/reports">
+              <i class="fas fa-chart-bar"></i> Relatórios
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Conteúdo principal -->
+    <main role="main" class="col-md-10 ml-sm-auto px-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gestão de Produtos</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">
+            <i class="fas fa-plus"></i> Novo Produto
+          </button>
+        </div>
+      </div>
+
+      <!-- Lista de Produtos -->
+      <div class="card shadow">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Produtos Cadastrados</h6>
+        </div>
+        <div class="card-body">
+          <% if (products && products.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Imagem</th>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Preço</th>
+                    <th>Estoque</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% products.forEach(product => { %>
+                    <tr>
+                      <td><%= product.id %></td>
+                      <td>
+                        <% if (product.product_images && product.product_images.length > 0) { %>
+                          <img src="/uploads/products/<%= product.product_images[0].filename %>" 
+                               alt="<%= product.name %>" 
+                               style="width: 50px; height: 50px; object-fit: cover;">
+                        <% } else { %>
+                          <div class="bg-light text-center" style="width: 50px; height: 50px; line-height: 50px;">
+                            <i class="fas fa-image text-muted"></i>
+                          </div>
+                        <% } %>
+                      </td>
+                      <td><%= product.name %></td>
+                      <td><%= product.category ? product.category.name : 'N/A' %></td>
+                      <td>R$ <%= product.price.toFixed(2) %></td>
+                      <td>
+                        <span class="badge badge-<%= product.stock_quantity > 10 ? 'success' : 
+                                                  product.stock_quantity > 0 ? 'warning' : 'danger' %>">
+                          <%= product.stock_quantity %>
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge badge-<%= product.is_active ? 'success' : 'danger' %>">
+                          <%= product.is_active ? 'Ativo' : 'Inativo' %>
+                        </span>
+                      </td>
+                      <td>
+                        <button class="btn btn-sm btn-info" onclick="editProduct('<%= product.id %>')">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct('<%= product.id %>')">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <p class="text-muted">Nenhum produto cadastrado.</p>
+          <% } %>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Adicionar Produto -->
+<div class="modal fade" id="addProductModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Novo Produto</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <form action="/admin/products" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Nome do Produto *</label>
+                <input type="text" class="form-control" name="name" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Slug *</label>
+                <input type="text" class="form-control" name="slug" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea class="form-control" name="description" rows="3"></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Preço *</label>
+                <input type="number" class="form-control" name="price" step="0.01" required>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Preço de Comparação</label>
+                <input type="number" class="form-control" name="compare_price" step="0.01">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Estoque *</label>
+                <input type="number" class="form-control" name="stock_quantity" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Categoria *</label>
+                <select class="form-control" name="category_id" required>
+                  <option value="">Selecione uma categoria</option>
+                  <% categories.forEach(category => { %>
+                    <option value="<%= category.id %>"><%= category.name %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>SKU</label>
+                <input type="text" class="form-control" name="sku">
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Imagens (máximo 3)</label>
+            <input type="file" class="form-control-file" name="images" multiple accept="image/*">
+            <small class="form-text text-muted">Formatos aceitos: JPG, PNG, GIF. Tamanho máximo: 5MB por imagem.</small>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" name="is_active" value="true" checked>
+                <label class="form-check-label">Ativo</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" name="is_featured" value="true">
+                <label class="form-check-label">Destaque</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" name="is_bestseller" value="true">
+                <label class="form-check-label">Mais Vendido</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Produto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar-sticky {
+  position: relative;
+  top: 0;
+  height: calc(100vh - 48px);
+  padding-top: .5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+</style>
+
+<script>
+function editProduct(productId) {
+  // Implementar edição de produto
+  alert('Editar produto ' + productId);
+}
+
+function deleteProduct(productId) {
+  if (confirm('Tem certeza que deseja excluir este produto?')) {
+    // Implementar exclusão de produto
+    alert('Excluir produto ' + productId);
+  }
+}
+</script>
+
+<%- include('../partials/admin-footer') %>

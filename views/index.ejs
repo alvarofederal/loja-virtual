@@ -1,0 +1,129 @@
+<%- include('partials/header') %>
+
+<!-- Hero Section -->
+<div class="bg-primary text-white py-5 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="display-4 fw-bold">Bem-vindo à Loja Virtual</h1>
+                <p class="lead">Descubra produtos incríveis com os melhores preços do mercado!</p>
+                <a href="/products" class="btn btn-light btn-lg">Ver Produtos</a>
+            </div>
+            <div class="col-md-6 text-center">
+                <i class="fas fa-shopping-bag" style="font-size: 8rem; opacity: 0.8;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Products -->
+<div class="container">
+    <h2 class="text-center mb-4">Produtos em Destaque</h2>
+    
+    <div class="row">
+        <% if (featuredProducts && featuredProducts.length > 0) { %>
+            <% featuredProducts.slice(0, 6).forEach(product => { %>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <% if (product.image) { %>
+                            <img src="/products/<%= product.id %>/image" 
+                                 class="card-img-top product-image" alt="<%= product.name %>" 
+                                 onerror="this.src='https://via.placeholder.com/300x200?text=Produto'">
+                        <% } else { %>
+                            <img src="https://via.placeholder.com/300x200?text=Produto" 
+                                 class="card-img-top product-image" alt="<%= product.name %>">
+                        <% } %>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title"><%= product.name %></h5>
+                            <p class="card-text text-muted"><%= product.description %></p>
+                            <div class="mt-auto">
+                                <p class="card-text">
+                                    <strong class="text-primary">R$ <%= parseFloat(product.price).toFixed(2) %></strong>
+                                </p>
+                                <div class="d-grid gap-2">
+                                    <a href="/products/<%= product.id %>" class="btn btn-outline-primary">Ver Detalhes</a>
+                                    <form action="/cart/add/<%= product.id %>" method="POST" class="d-inline">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-cart-plus"></i> Adicionar ao Carrinho
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="col-12 text-center">
+                <p class="text-muted">Nenhum produto em destaque disponível no momento.</p>
+            </div>
+        <% } %>
+    </div>
+    
+    <% if (featuredProducts && featuredProducts.length > 6) { %>
+        <div class="text-center mt-4">
+            <a href="/products" class="btn btn-outline-primary btn-lg">Ver Todos os Produtos</a>
+        </div>
+    <% } %>
+</div>
+
+<!-- Best Sellers -->
+<% if (bestSellers && bestSellers.length > 0) { %>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Mais Vendidos</h2>
+    
+    <div class="row">
+        <% bestSellers.slice(0, 4).forEach(product => { %>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <img src="<%= product.image_url || 'https://via.placeholder.com/300x200?text=Produto' %>" 
+                         class="card-img-top product-image" alt="<%= product.name %>" 
+                         onerror="this.src='https://via.placeholder.com/300x200?text=Produto'">
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title"><%= product.name %></h6>
+                        <p class="card-text text-muted small"><%= product.description %></p>
+                        <div class="mt-auto">
+                            <p class="card-text">
+                                <strong class="text-primary">R$ <%= parseFloat(product.price).toFixed(2) %></strong>
+                            </p>
+                            <div class="d-grid gap-2">
+                                <a href="/products/<%= product.id %>" class="btn btn-outline-primary btn-sm">Ver Detalhes</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</div>
+<% } %>
+
+<!-- Features Section -->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4 text-center mb-4">
+            <div class="p-4">
+                <i class="fas fa-shipping-fast text-primary" style="font-size: 3rem;"></i>
+                <h4 class="mt-3">Entrega Rápida</h4>
+                <p class="text-muted">Receba seus produtos em até 24 horas na sua casa.</p>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="p-4">
+                <i class="fas fa-shield-alt text-primary" style="font-size: 3rem;"></i>
+                <h4 class="mt-3">Compra Segura</h4>
+                <p class="text-muted">Seus dados estão protegidos com a mais alta segurança.</p>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="p-4">
+                <i class="fas fa-undo text-primary" style="font-size: 3rem;"></i>
+                <h4 class="mt-3">Devolução Fácil</h4>
+                <p class="text-muted">Não gostou? Devolva em até 30 dias sem complicação.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %> 

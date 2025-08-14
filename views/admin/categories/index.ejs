@@ -1,0 +1,425 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/products">
+              <i class="fas fa-box"></i> Produtos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/categories">
+              <i class="fas fa-tags"></i> Categorias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/orders">
+              <i class="fas fa-shopping-cart"></i> Pedidos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+              <i class="fas fa-users"></i> Usuários
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">
+              <i class="fas fa-cog"></i> Configurações
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gestão de Categorias</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <button type="button" class="btn btn-primary" onclick="showCreateCategoryModal()">
+            <i class="fas fa-plus"></i> Nova Categoria
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="row mb-3">
+        <div class="col-md-8">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Buscar categorias..." id="searchInput">
+            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" id="statusFilter">
+            <option value="">Todos os status</option>
+            <option value="active">Ativas</option>
+            <option value="inactive">Inativas</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Cards de categorias -->
+      <div class="row" id="categoriesContainer">
+        <% categories.forEach(category => { %>
+          <div class="col-md-6 col-lg-4 mb-4 category-card" 
+               data-name="<%= category.name.toLowerCase() %>" 
+               data-status="<%= category.is_active ? 'active' : 'inactive' %>">
+            <div class="card shadow h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <h5 class="card-title mb-0"><%= category.name %></h5>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                            data-bs-toggle="dropdown">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="#" onclick="editCategory('<%= category.id %>', '<%= category.name %>', '<%= category.description %>', <%= category.is_active %>)">
+                          <i class="fas fa-edit"></i> Editar
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="#" onclick="toggleCategoryStatus('<%= category.id %>', '<%= category.name %>', <%= category.is_active %>)">
+                          <i class="fas fa-<%= category.is_active ? 'times' : 'check' %>"></i> 
+                          <%= category.is_active ? 'Desativar' : 'Ativar' %>
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <a class="dropdown-item text-danger" href="#" onclick="deleteCategory('<%= category.id %>', '<%= category.name %>')">
+                          <i class="fas fa-trash"></i> Excluir
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <p class="card-text text-muted">
+                  <%= category.description || 'Sem descrição' %>
+                </p>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="badge bg-<%= category.is_active ? 'success' : 'danger' %>">
+                    <%= category.is_active ? 'Ativa' : 'Inativa' %>
+                  </span>
+                  <small class="text-muted">
+                    Slug: <%= category.slug %>
+                  </small>
+                </div>
+                
+                <div class="mt-3">
+                  <small class="text-muted">
+                    <i class="fas fa-box"></i> 
+                    <% if (category.products_count !== undefined) { %>
+                      <%= category.products_count %> produtos
+                    <% } else { %>
+                      Produtos não contabilizados
+                    <% } %>
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Mensagem quando não há categorias -->
+      <div id="noCategoriesMessage" class="text-center py-5" style="display: none;">
+        <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">Nenhuma categoria encontrada</h4>
+        <p class="text-muted">Crie sua primeira categoria para começar a organizar seus produtos.</p>
+        <button type="button" class="btn btn-primary" onclick="showCreateCategoryModal()">
+          <i class="fas fa-plus"></i> Criar Primeira Categoria
+        </button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal de criação/edição de categoria -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="categoryModalTitle">Nova Categoria</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="categoryForm">
+          <input type="hidden" id="categoryId" name="id">
+          <div class="mb-3">
+            <label for="categoryName" class="form-label">Nome da Categoria *</label>
+            <input type="text" class="form-control" id="categoryName" name="name" required>
+            <div class="form-text">O slug será gerado automaticamente baseado no nome.</div>
+          </div>
+          <div class="mb-3">
+            <label for="categoryDescription" class="form-label">Descrição</label>
+            <textarea class="form-control" id="categoryDescription" name="description" rows="3"
+                      placeholder="Descreva a categoria..."></textarea>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="categoryActive" name="is_active" checked>
+              <label class="form-check-label" for="categoryActive">
+                Categoria Ativa
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveCategory()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir a categoria "<span id="categoryNameToDelete"></span>"?</p>
+        <p class="text-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>Atenção:</strong> Esta ação pode afetar produtos associados a esta categoria.
+        </p>
+        <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" onclick="confirmDeleteCategory()">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.sidebar .nav-link.active {
+  color: #007bff;
+}
+
+.sidebar .nav-link:hover {
+  color: #007bff;
+}
+
+.category-card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+}
+
+.card {
+  border: 1px solid rgba(0,0,0,.125);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+
+<script>
+let currentCategoryId = null;
+let isEditing = false;
+
+function showCreateCategoryModal() {
+  isEditing = false;
+  document.getElementById('categoryModalTitle').textContent = 'Nova Categoria';
+  document.getElementById('categoryForm').reset();
+  document.getElementById('categoryId').value = '';
+  document.getElementById('categoryActive').checked = true;
+  
+  const categoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+  categoryModal.show();
+}
+
+function editCategory(categoryId, name, description, isActive) {
+  isEditing = true;
+  currentCategoryId = categoryId;
+  
+  document.getElementById('categoryModalTitle').textContent = 'Editar Categoria';
+  document.getElementById('categoryId').value = categoryId;
+  document.getElementById('categoryName').value = name;
+  document.getElementById('categoryDescription').value = description || '';
+  document.getElementById('categoryActive').checked = isActive;
+  
+  const categoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+  categoryModal.show();
+}
+
+function saveCategory() {
+  const formData = new FormData(document.getElementById('categoryForm'));
+  const data = Object.fromEntries(formData.entries());
+  data.is_active = document.getElementById('categoryActive').checked;
+  
+  if (isEditing) {
+    // Atualizar categoria existente
+    fetch(`/admin/categories/${currentCategoryId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Erro ao atualizar categoria: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao atualizar categoria');
+    });
+  } else {
+    // Criar nova categoria
+    fetch('/admin/categories', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Erro ao criar categoria: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao criar categoria');
+    });
+  }
+}
+
+function toggleCategoryStatus(categoryId, categoryName, currentStatus) {
+  const action = currentStatus ? 'desativar' : 'ativar';
+  if (confirm(`Tem certeza que deseja ${action} a categoria "${categoryName}"?`)) {
+    fetch(`/admin/categories/${categoryId}/toggle-status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Erro ao alterar status: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao alterar status');
+    });
+  }
+}
+
+function deleteCategory(categoryId, categoryName) {
+  currentCategoryId = categoryId;
+  document.getElementById('categoryNameToDelete').textContent = categoryName;
+  
+  const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+  deleteModal.show();
+}
+
+function confirmDeleteCategory() {
+  fetch(`/admin/categories/${currentCategoryId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Erro ao excluir categoria: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    alert('Erro ao excluir categoria');
+  });
+}
+
+// Filtros
+document.getElementById('searchInput').addEventListener('input', filterCategories);
+document.getElementById('statusFilter').addEventListener('change', filterCategories);
+
+function filterCategories() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const statusFilter = document.getElementById('statusFilter').value;
+  
+  const cards = document.querySelectorAll('.category-card');
+  let visibleCards = 0;
+  
+  cards.forEach(card => {
+    const name = card.dataset.name;
+    const status = card.dataset.status;
+    
+    const matchesSearch = name.includes(searchTerm);
+    const matchesStatus = !statusFilter || status === statusFilter;
+    
+    if (matchesSearch && matchesStatus) {
+      card.style.display = '';
+      visibleCards++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+  
+  // Mostrar mensagem quando não há categorias visíveis
+  const noCategoriesMessage = document.getElementById('noCategoriesMessage');
+  if (visibleCards === 0) {
+    noCategoriesMessage.style.display = 'block';
+  } else {
+    noCategoriesMessage.style.display = 'none';
+  }
+}
+</script>
+
+<%- include('../../partials/admin-footer') %>

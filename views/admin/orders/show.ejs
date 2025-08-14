@@ -1,0 +1,373 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/products">
+              <i class="fas fa-box"></i> Produtos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/categories">
+              <i class="fas fa-tags"></i> Categorias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/orders">
+              <i class="fas fa-shopping-cart"></i> Pedidos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+              <i class="fas fa-users"></i> Usuários
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">
+              <i class="fas fa-cog"></i> Configurações
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Pedido #<%= order.id.substring(0, 8) %></h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/orders" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left"></i> Voltar
+          </a>
+          <button type="button" class="btn btn-primary" onclick="printOrder()">
+            <i class="fas fa-print"></i> Imprimir
+          </button>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Informações do pedido -->
+        <div class="col-lg-8">
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Informações do Pedido</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>ID do Pedido:</strong> #<%= order.id.substring(0, 8) %></p>
+                  <p><strong>Data:</strong> <%= new Date(order.created_at).toLocaleDateString('pt-BR') %></p>
+                  <p><strong>Hora:</strong> <%= new Date(order.created_at).toLocaleTimeString('pt-BR') %></p>
+                  <p><strong>Status:</strong> 
+                    <span class="badge bg-<%= 
+                      order.status === 'paid' ? 'success' : 
+                      order.status === 'pending' ? 'warning' : 
+                      order.status === 'shipped' ? 'info' : 
+                      order.status === 'delivered' ? 'primary' : 'danger' 
+                    %>">
+                      <%= order.status === 'pending' ? 'Pendente' :
+                         order.status === 'paid' ? 'Pago' :
+                         order.status === 'shipped' ? 'Enviado' :
+                         order.status === 'delivered' ? 'Entregue' : 'Cancelado' %>
+                    </span>
+                  </p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>Método de Pagamento:</strong> <%= order.payment_method || 'Não informado' %></p>
+                  <p><strong>ID do Pagamento:</strong> <%= order.payment_id || 'Não informado' %></p>
+                  <p><strong>Valor Total:</strong> R$ <%= (order.total_amount ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></p>
+                  <p><strong>Frete:</strong> R$ <%= parseFloat(order.shipping_amount).toFixed(2) %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Itens do pedido -->
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Itens do Pedido</h5>
+            </div>
+            <div class="card-body">
+              <% if (order.items && order.items.length > 0) { %>
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Preço Unit.</th>
+                        <th>Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% order.items.forEach(item => { %>
+                        <tr>
+                          <td>
+                            <div class="d-flex align-items-center">
+                              <% if (item.product && item.product.images && item.product.images.length > 0) { %>
+                                <img src="<%= item.product.images[0].url %>" alt="<%= item.product.name %>" 
+                                     class="me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                              <% } %>
+                              <div>
+                                <strong><%= item.product ? item.product.name : 'Produto não encontrado' %></strong>
+                                <% if (item.product && item.product.sku) { %>
+                                  <br><small class="text-muted">SKU: <%= item.product.sku %></small>
+                                <% } %>
+                              </div>
+                            </div>
+                          </td>
+                          <td><%= item.quantity %></td>
+                          <td>R$ <%= parseFloat(item.price).toFixed(2) %></td>
+                          <td>R$ <%= (parseFloat(item.price) * item.quantity).toFixed(2) %></td>
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                        <td>R$ <%= (order.total_amount && order.shipping_amount ? (parseFloat(order.total_amount) - parseFloat(order.shipping_amount)).toFixed(2) : '0.00') %></td>
+                      </tr>
+                      <tr>
+                        <td colspan="3" class="text-end"><strong>Frete:</strong></td>
+                        <td>R$ <%= parseFloat(order.shipping_amount).toFixed(2) %></td>
+                      </tr>
+                      <tr>
+                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                        <td><strong>R$ <%= (order.total_amount ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></strong></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              <% } else { %>
+                <p class="text-muted">Nenhum item encontrado para este pedido.</p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Informações do cliente e endereço -->
+        <div class="col-lg-4">
+          <!-- Informações do cliente -->
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Informações do Cliente</h5>
+            </div>
+            <div class="card-body">
+              <p><strong>Nome:</strong> <%= order.customer_name %></p>
+              <p><strong>Email:</strong> <%= order.customer_email %></p>
+              <% if (order.customer_phone) { %>
+                <p><strong>Telefone:</strong> <%= order.customer_phone %></p>
+              <% } %>
+              <% if (order.user) { %>
+                <p><strong>Usuário:</strong> <%= order.user.name %></p>
+                <p><strong>ID do Usuário:</strong> <%= order.user.id.substring(0, 8) %></p>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Endereço de entrega -->
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Endereço de Entrega</h5>
+            </div>
+            <div class="card-body">
+              <p class="mb-0"><%= order.shipping_address %></p>
+            </div>
+          </div>
+
+          <!-- Ações -->
+          <div class="card shadow">
+            <div class="card-header">
+              <h5 class="mb-0">Ações</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <button type="button" class="btn btn-warning" onclick="updateOrderStatus()">
+                  <i class="fas fa-edit"></i> Atualizar Status
+                </button>
+                <button type="button" class="btn btn-info" onclick="sendEmail()">
+                  <i class="fas fa-envelope"></i> Enviar Email
+                </button>
+                <button type="button" class="btn btn-success" onclick="markAsShipped()">
+                  <i class="fas fa-truck"></i> Marcar como Enviado
+                </button>
+                <button type="button" class="btn btn-primary" onclick="markAsDelivered()">
+                  <i class="fas fa-check"></i> Marcar como Entregue
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal de atualização de status -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Atualizar Status do Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="statusForm">
+          <div class="mb-3">
+            <label for="newStatus" class="form-label">Novo Status</label>
+            <select class="form-select" id="newStatus" name="status" required>
+              <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pendente</option>
+              <option value="paid" <%= order.status === 'paid' ? 'selected' : '' %>>Pago</option>
+              <option value="shipped" <%= order.status === 'shipped' ? 'selected' : '' %>>Enviado</option>
+              <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Entregue</option>
+              <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelado</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="statusNote" class="form-label">Observação (opcional)</label>
+            <textarea class="form-control" id="statusNote" name="note" rows="3" 
+                      placeholder="Adicione uma observação sobre a atualização..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveStatus()">Atualizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.sidebar .nav-link.active {
+  color: #007bff;
+}
+
+.sidebar .nav-link:hover {
+  color: #007bff;
+}
+</style>
+
+<script>
+function updateOrderStatus() {
+  const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+  statusModal.show();
+}
+
+function saveStatus() {
+  const newStatus = document.getElementById('newStatus').value;
+  const note = document.getElementById('statusNote').value;
+  
+  fetch(`/admin/orders/<%= order.id %>/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      status: newStatus,
+      note: note
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Erro ao atualizar status: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    alert('Erro ao atualizar status');
+  });
+}
+
+function markAsShipped() {
+  if (confirm('Marcar pedido como enviado?')) {
+    fetch(`/admin/orders/<%= order.id %>/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        status: 'shipped',
+        note: 'Pedido marcado como enviado pelo administrador'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Erro ao atualizar status: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao atualizar status');
+    });
+  }
+}
+
+function markAsDelivered() {
+  if (confirm('Marcar pedido como entregue?')) {
+    fetch(`/admin/orders/<%= order.id %>/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        status: 'delivered',
+        note: 'Pedido marcado como entregue pelo administrador'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Erro ao atualizar status: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao atualizar status');
+    });
+  }
+}
+
+function sendEmail() {
+  // Implementar envio de email
+  alert('Funcionalidade de envio de email será implementada em breve');
+}
+
+function printOrder() {
+  window.print();
+}
+</script>
+
+<%- include('../../partials/admin-footer') %>

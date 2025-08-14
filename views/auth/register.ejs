@@ -1,0 +1,55 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4><i class="fas fa-user-plus"></i> Criar Conta</h4>
+                </div>
+                <div class="card-body">
+                    <form action="/auth/register" method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nome Completo:</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email:</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Senha:</label>
+                            <input type="password" id="password" name="password" class="form-control" 
+                                   minlength="6" required>
+                            <div class="form-text">A senha deve ter pelo menos 6 caracteres.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirmar Senha:</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Criar Conta
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <p class="mb-0">Já tem uma conta?</p>
+                        <a href="/auth/login" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt"></i> Fazer Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %> 

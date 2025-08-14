@@ -1,0 +1,285 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Início</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Meu Perfil</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user"></i> Meu Perfil
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form action="/auth/profile" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="_method" value="PUT">
+                        
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4">
+                                <div class="profile-image-container">
+                                    <% if (user.profile_image) { %>
+                                        <img src="/auth/profile/image" 
+                                             alt="Foto de Perfil" 
+                                             class="profile-image mb-3"
+                                             id="profilePreview"
+                                             onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Foto'">
+                                    <% } else { %>
+                                        <img src="https://via.placeholder.com/200x200?text=Sem+Foto" 
+                                             alt="Foto de Perfil" 
+                                             class="profile-image mb-3"
+                                             id="profilePreview">
+                                    <% } %>
+                                    
+                                    <div class="mb-3">
+                                        <label for="profileImage" class="form-label">Alterar Foto</label>
+                                        <input type="file" 
+                                               class="form-control" 
+                                               id="profileImage" 
+                                               name="profile_image"
+                                               accept="image/jpeg,image/jpg,image/png,image/webp"
+                                               onchange="previewImage(this)">
+                                        <div class="form-text">Formatos aceitos: JPEG, PNG, WebP (máx. 5MB)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label">Nome Completo *</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="name" 
+                                               name="name" 
+                                               value="<%= user.name %>" 
+                                               required>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email *</label>
+                                        <input type="email" 
+                                               class="form-control" 
+                                               id="email" 
+                                               name="email" 
+                                               value="<%= user.email %>" 
+                                               required>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">Telefone</label>
+                                        <input type="tel" 
+                                               class="form-control" 
+                                               id="phone" 
+                                               name="phone" 
+                                               value="<%= user.phone || '' %>">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="role" class="form-label">Tipo de Conta</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               value="<%= user.role === 'admin' ? 'Administrador' : 'Usuário' %>" 
+                                               readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="address" class="form-label">Endereço</label>
+                                        <textarea class="form-control" 
+                                                  id="address" 
+                                                  name="address" 
+                                                  rows="2"><%= user.address || '' %></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="city" class="form-label">Cidade</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="city" 
+                                               name="city" 
+                                               value="<%= user.city || '' %>">
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label for="state" class="form-label">Estado</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="state" 
+                                               name="state" 
+                                               value="<%= user.state || '' %>">
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label for="zip_code" class="form-label">CEP</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="zip_code" 
+                                               name="zip_code" 
+                                               value="<%= user.zip_code || '' %>">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h5>Alterar Senha</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="currentPassword" class="form-label">Senha Atual</label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="currentPassword" 
+                                       name="currentPassword">
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="newPassword" class="form-label">Nova Senha</label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="newPassword" 
+                                       name="newPassword">
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmar Nova Senha</label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="confirmPassword" 
+                                       name="confirmPassword">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Informações da Conta</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Membro desde:</strong> <%= new Date(user.created_at).toLocaleDateString('pt-BR') %></p>
+                    <p><strong>Último login:</strong> <%= user.last_login ? new Date(user.last_login).toLocaleDateString('pt-BR') : 'Nunca' %></p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge badge-<%= user.is_active ? 'success' : 'danger' %>">
+                            <%= user.is_active ? 'Ativo' : 'Inativo' %>
+                        </span>
+                    </p>
+                    <p><strong>Email verificado:</strong> 
+                        <span class="badge badge-<%= user.email_verified ? 'success' : 'warning' %>">
+                            <%= user.email_verified ? 'Sim' : 'Não' %>
+                        </span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/orders" class="btn btn-outline-primary">
+                            <i class="fas fa-receipt"></i> Meus Pedidos
+                        </a>
+                        <a href="/cart" class="btn btn-outline-secondary">
+                            <i class="fas fa-shopping-cart"></i> Meu Carrinho
+                        </a>
+                        <% if (user.role === 'admin') { %>
+                            <a href="/admin" class="btn btn-outline-warning">
+                                <i class="fas fa-cog"></i> Painel Admin
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-image {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #007bff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.profile-image-container {
+    position: relative;
+}
+
+.profile-image-container:hover .profile-image {
+    border-color: #0056b3;
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+}
+</style>
+
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const preview = document.getElementById('profilePreview');
+            preview.src = e.target.result;
+        };
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Validação de senha
+document.querySelector('form').addEventListener('submit', function(e) {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const currentPassword = document.getElementById('currentPassword').value;
+    
+    if (newPassword || confirmPassword || currentPassword) {
+        if (!currentPassword) {
+            e.preventDefault();
+            alert('Por favor, informe sua senha atual para alterar a senha.');
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            e.preventDefault();
+            alert('As senhas não coincidem.');
+            return;
+        }
+        
+        if (newPassword && newPassword.length < 6) {
+            e.preventDefault();
+            alert('A nova senha deve ter pelo menos 6 caracteres.');
+            return;
+        }
+    }
+});
+</script>
+
+<%- include('../partials/footer') %>

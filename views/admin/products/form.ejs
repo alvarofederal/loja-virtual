@@ -1,0 +1,408 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar" style="position: fixed; top: 120px; bottom: 0; left: 0; z-index: 100; padding: 20px 0; overflow-x: hidden; overflow-y: auto; background-color: #f8f9fa; border-right: 1px solid #dee2e6;">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/products">
+              <i class="fas fa-box"></i> Produtos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/categories">
+              <i class="fas fa-tags"></i> Categorias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/orders">
+              <i class="fas fa-shopping-cart"></i> Pedidos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+              <i class="fas fa-users"></i> Usuários
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">
+              <i class="fas fa-cog"></i> Configurações
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="margin-top: 20px; margin-left: 16.666667%;">
+      <style>
+        @media (max-width: 768px) {
+          main {
+            margin-left: 0 !important;
+            margin-top: 10px !important;
+          }
+          .sidebar {
+            position: static !important;
+            margin-bottom: 20px;
+          }
+        }
+      </style>
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2"><%= product ? 'Editar Produto' : 'Novo Produto' %></h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/products" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+          </a>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card shadow">
+            <div class="card-body">
+              <form action="<%= product ? `/admin/products/${product.id}?_method=PUT` : '/admin/products' %>" 
+                    method="POST" enctype="multipart/form-data" id="productForm" novalidate>
+                
+                <!-- Informações básicas -->
+                <h5 class="card-title mb-3">Informações Básicas</h5>
+                
+                <div class="row">
+                  <div class="col-md-8">
+                    <div class="mb-3">
+                      <label for="name" class="form-label">Nome do Produto *</label>
+                      <input type="text" class="form-control" id="name" name="name" 
+                             value="<%= product ? product.name : '' %>" required>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <label for="sku" class="form-label">SKU</label>
+                      <input type="text" class="form-control" id="sku" name="sku" 
+                             value="<%= product ? product.sku : '' %>">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="description" class="form-label">Descrição</label>
+                  <textarea class="form-control" id="description" name="description" rows="4"
+                            placeholder="Descreva o produto..."><%= product ? product.description : '' %></textarea>
+                </div>
+
+                <!-- Preços -->
+                <h5 class="card-title mb-3 mt-4">Preços</h5>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="price" class="form-label">Preço de Venda *</label>
+                      <div class="input-group">
+                        <span class="input-group-text">R$</span>
+                        <input type="number" class="form-control" id="price" name="price" 
+                               step="0.01" min="0" value="<%= product ? product.price : '' %>" required>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="compare_price" class="form-label">Preço de Comparação</label>
+                      <div class="input-group">
+                        <span class="input-group-text">R$</span>
+                        <input type="number" class="form-control" id="compare_price" name="compare_price" 
+                               step="0.01" min="0" value="<%= product ? product.compare_price : '' %>">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Estoque e Categoria -->
+                <h5 class="card-title mb-3 mt-4">Estoque e Categoria</h5>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="stock_quantity" class="form-label">Quantidade em Estoque</label>
+                      <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" 
+                             min="0" value="<%= product ? product.stock_quantity : 0 %>">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="category_id" class="form-label">Categoria</label>
+                      <select class="form-select" id="category_id" name="category_id">
+                        <option value="">Selecione uma categoria</option>
+                        <% categories.forEach(category => { %>
+                          <option value="<%= category.id %>" 
+                                  <%= product && product.category_id === category.id ? 'selected' : '' %>>
+                            <%= category.name %>
+                          </option>
+                        <% }) %>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Status e Destaques -->
+                <h5 class="card-title mb-3 mt-4">Status e Destaques</h5>
+                
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                               <%= product && product.is_active ? 'checked' : '' %>>
+                        <label class="form-check-label" for="is_active">
+                          Produto Ativo
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" 
+                               <%= product && product.is_featured ? 'checked' : '' %>>
+                        <label class="form-check-label" for="is_featured">
+                          Produto em Destaque
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is_bestseller" name="is_bestseller" 
+                               <%= product && product.is_bestseller ? 'checked' : '' %>>
+                        <label class="form-check-label" for="is_bestseller">
+                          Mais Vendido
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Carrossel de Imagens do Produto -->
+                <h5 class="card-title mb-3 mt-4">Carrossel de Imagens (Máximo 3)</h5>
+                
+                <div class="mb-3">
+                  <label for="product_images" class="form-label">Selecionar Imagens</label>
+                  <input type="file" class="form-control" id="product_images" name="product_images" 
+                         accept="image/*" multiple>
+                  <div class="form-text">Formatos aceitos: JPG, PNG, WebP. Tamanho máximo: 5MB por imagem. Máximo 3 imagens.</div>
+                </div>
+
+                <!-- Preview das imagens existentes -->
+                <% if (product && (product.image || product.image_2 || product.image_3)) { %>
+                  <div class="mb-3">
+                    <label class="form-label">Imagens Atuais</label>
+                    <div class="row">
+                      <% if (product.image) { %>
+                        <div class="col-md-4 mb-2">
+                          <div class="position-relative">
+                            <img src="/admin/products/<%= product.id %>/image" alt="<%= product.name %> - Imagem 1" 
+                                 class="img-thumbnail" style="width: 100%; height: 150px; object-fit: cover;">
+                            <span class="badge bg-primary position-absolute top-0 start-0 m-1">1</span>
+                          </div>
+                        </div>
+                      <% } %>
+                      <% if (product.image_2) { %>
+                        <div class="col-md-4 mb-2">
+                          <div class="position-relative">
+                            <img src="/admin/products/<%= product.id %>/image/2" alt="<%= product.name %> - Imagem 2" 
+                                 class="img-thumbnail" style="width: 100%; height: 150px; object-fit: cover;">
+                            <span class="badge bg-primary position-absolute top-0 start-0 m-1">2</span>
+                          </div>
+                        </div>
+                      <% } %>
+                      <% if (product.image_3) { %>
+                        <div class="col-md-4 mb-2">
+                          <div class="position-relative">
+                            <img src="/admin/products/<%= product.id %>/image/3" alt="<%= product.name %> - Imagem 3" 
+                                 class="img-thumbnail" style="width: 100%; height: 150px; object-fit: cover;">
+                            <span class="badge bg-primary position-absolute top-0 start-0 m-1">3</span>
+                          </div>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                <% } %>
+
+                <!-- Preview das novas imagens -->
+                <div id="imagePreview" class="mb-3" style="display: none;">
+                  <label class="form-label">Preview das Novas Imagens</label>
+                  <div id="previewContainer" class="row">
+                    <!-- As imagens serão inseridas aqui via JavaScript -->
+                  </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                  <a href="/admin/products" class="btn btn-secondary me-md-2">Cancelar</a>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 
+                    <%= product ? 'Atualizar Produto' : 'Criar Produto' %>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar com informações -->
+        <div class="col-lg-4">
+          <div class="card shadow">
+            <div class="card-header">
+              <h6 class="mb-0">Informações</h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <strong>Dicas para um bom produto:</strong>
+                <ul class="mt-2">
+                  <li>Use nomes descritivos e atrativos</li>
+                  <li>Adicione imagens de alta qualidade</li>
+                  <li>Descreva bem as características do produto</li>
+                  <li>Defina preços competitivos</li>
+                  <li>Mantenha o estoque atualizado</li>
+                </ul>
+              </div>
+              
+              <% if (product) { %>
+                <div class="mb-3">
+                  <strong>Informações do Produto:</strong>
+                  <ul class="mt-2">
+                    <li>ID: <%= product.id %></li>
+                    <li>Criado em: <%= new Date(product.created_at).toLocaleDateString('pt-BR') %></li>
+                    <li>Última atualização: <%= new Date(product.updated_at).toLocaleDateString('pt-BR') %></li>
+                  </ul>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Preview de múltiplas imagens
+  const imageInput = document.getElementById('product_images');
+  if (imageInput) {
+    imageInput.addEventListener('change', function(e) {
+      const files = e.target.files;
+      const imagePreview = document.getElementById('imagePreview');
+      const previewContainer = document.getElementById('previewContainer');
+      
+      if (!previewContainer) return;
+      
+      // Limpar preview anterior
+      previewContainer.innerHTML = '';
+      
+      if (files && files.length > 0) {
+        const maxFiles = Math.min(files.length, 3);
+        
+        for (let i = 0; i < maxFiles; i++) {
+          const file = files[i];
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            const colDiv = document.createElement('div');
+            colDiv.className = 'col-md-4 mb-2';
+            
+            const positionDiv = document.createElement('div');
+            positionDiv.className = 'position-relative';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = `Preview ${i + 1}`;
+            img.className = 'img-thumbnail';
+            img.style = 'width: 100%; height: 150px; object-fit: cover;';
+            
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-primary position-absolute top-0 start-0 m-1';
+            badge.textContent = i + 1;
+            
+            // Adicionar nome do arquivo
+            const fileName = document.createElement('small');
+            fileName.className = 'd-block mt-1 text-muted';
+            fileName.textContent = file.name.length > 20 ? file.name.substring(0, 20) + '...' : file.name;
+            
+            positionDiv.appendChild(img);
+            positionDiv.appendChild(badge);
+            colDiv.appendChild(positionDiv);
+            colDiv.appendChild(fileName);
+            previewContainer.appendChild(colDiv);
+          };
+          
+          reader.readAsDataURL(file);
+        }
+        
+        if (imagePreview) {
+          imagePreview.style.display = 'block';
+        }
+        
+        // Mostrar informações sobre os arquivos selecionados
+        console.log(`Selecionados ${files.length} arquivos:`, Array.from(files).map(f => f.name));
+      } else {
+        if (imagePreview) {
+          imagePreview.style.display = 'none';
+        }
+      }
+    });
+  }
+
+  // Validação do formulário
+  const productForm = document.getElementById('productForm');
+  if (productForm) {
+    productForm.addEventListener('submit', function(e) {
+      const name = document.getElementById('name').value.trim();
+      const price = document.getElementById('price').value;
+      const files = document.getElementById('product_images').files;
+      
+      if (!name) {
+        e.preventDefault();
+        alert('Por favor, preencha o nome do produto');
+        return;
+      }
+      
+      if (!price || price <= 0) {
+        e.preventDefault();
+        alert('Por favor, insira um preço válido');
+        return;
+      }
+      
+      if (files && files.length > 3) {
+        e.preventDefault();
+        alert('Por favor, selecione no máximo 3 imagens');
+        return;
+      }
+      
+      // Mostrar informações de debug
+      console.log('Enviando formulário com:', {
+        name: name,
+        price: price,
+        filesCount: files ? files.length : 0,
+        files: files ? Array.from(files).map(f => f.name) : []
+      });
+    });
+  }
+  
+  // Adicionar informações de debug para o campo de arquivo
+  if (imageInput) {
+    console.log('Campo de imagem encontrado:', imageInput.name);
+    console.log('Aceita múltiplos arquivos:', imageInput.multiple);
+    console.log('Tipos aceitos:', imageInput.accept);
+  }
+});
+</script>
+
+<%- include('../../partials/admin-footer') %>

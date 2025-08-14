@@ -1,0 +1,159 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Início</a></li>
+            <li class="breadcrumb-item"><a href="/products">Produtos</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><%= product.name %></li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Carrossel de Imagens -->
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <% if (product.image) { %>
+                        <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="0" class="active"></button>
+                    <% } %>
+                    <% if (product.image_2) { %>
+                        <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="1" class="<%= !product.image ? 'active' : '' %>"></button>
+                    <% } %>
+                    <% if (product.image_3) { %>
+                        <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="2" class="<%= !product.image && !product.image_2 ? 'active' : '' %>"></button>
+                    <% } %>
+                </div>
+                
+                <div class="carousel-inner">
+                    <% if (product.image) { %>
+                        <div class="carousel-item active">
+                            <img src="/products/<%= product.id %>/image" class="d-block w-100 rounded" alt="<%= product.name %> - Imagem 1"
+                                 onerror="this.src='https://via.placeholder.com/600x400?text=Produto'">
+                        </div>
+                    <% } %>
+                    <% if (product.image_2) { %>
+                        <div class="carousel-item <%= !product.image ? 'active' : '' %>">
+                            <img src="/products/<%= product.id %>/image/2" class="d-block w-100 rounded" alt="<%= product.name %> - Imagem 2"
+                                 onerror="this.src='https://via.placeholder.com/600x400?text=Produto'">
+                        </div>
+                    <% } %>
+                    <% if (product.image_3) { %>
+                        <div class="carousel-item <%= !product.image && !product.image_2 ? 'active' : '' %>">
+                            <img src="/products/<%= product.id %>/image/3" class="d-block w-100 rounded" alt="<%= product.name %> - Imagem 3"
+                                 onerror="this.src='https://via.placeholder.com/600x400?text=Produto'">
+                        </div>
+                    <% } %>
+                    
+                    <!-- Imagem padrão se não houver imagens -->
+                    <% if (!product.image && !product.image_2 && !product.image_3) { %>
+                        <div class="carousel-item active">
+                            <img src="https://via.placeholder.com/600x400?text=Produto" class="d-block w-100 rounded" alt="<%= product.name %>">
+                        </div>
+                    <% } %>
+                </div>
+                
+                <% if ((product.image && product.image_2) || (product.image && product.image_3) || (product.image_2 && product.image_3)) { %>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Próximo</span>
+                    </button>
+                <% } %>
+            </div>
+            
+            <!-- Miniaturas das imagens -->
+            <% if (product.image || product.image_2 || product.image_3) { %>
+                <div class="row mt-3">
+                    <% if (product.image) { %>
+                        <div class="col-4">
+                            <img src="/products/<%= product.id %>/image" class="img-thumbnail" alt="Miniatura 1" 
+                                 style="cursor: pointer; height: 80px; object-fit: cover;"
+                                 onclick="showImage(0)">
+                        </div>
+                    <% } %>
+                    <% if (product.image_2) { %>
+                        <div class="col-4">
+                            <img src="/products/<%= product.id %>/image/2" class="img-thumbnail" alt="Miniatura 2" 
+                                 style="cursor: pointer; height: 80px; object-fit: cover;"
+                                 onclick="showImage(1)">
+                        </div>
+                    <% } %>
+                    <% if (product.image_3) { %>
+                        <div class="col-4">
+                            <img src="/products/<%= product.id %>/image/3" class="img-thumbnail" alt="Miniatura 3" 
+                                 style="cursor: pointer; height: 80px; object-fit: cover;"
+                                 onclick="showImage(2)">
+                        </div>
+                    <% } %>
+                </div>
+            <% } %>
+        </div>
+        <div class="col-md-6">
+            <h1 class="mb-3"><%= product.name %></h1>
+            <p class="text-muted mb-3"><%= product.description %></p>
+            
+            <div class="mb-4">
+                <h2 class="text-primary">R$ <%= parseFloat(product.price).toFixed(2) %></h2>
+            </div>
+
+            <form action="/cart/add/<%= product.id %>" method="POST" class="mb-4">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="quantity" class="form-label">Quantidade:</label>
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" class="form-control">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-cart-plus"></i> Adicionar ao Carrinho
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="d-grid gap-2">
+                <a href="/products" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar aos Produtos
+                </a>
+                
+                <% if (user && user.role === 'admin') { %>
+                    <div class="btn-group w-100" role="group">
+                        <a href="/products/<%= product.id %>/edit" class="btn btn-outline-warning">
+                            <i class="fas fa-edit"></i> Editar Produto
+                        </a>
+                        <form action="/products/<%= product.id %>?_method=DELETE" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-outline-danger" 
+                                    onclick="return confirm('Tem certeza que deseja excluir este produto?')">
+                                <i class="fas fa-trash"></i> Excluir Produto
+                            </button>
+                        </form>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showImage(index) {
+    const carousel = new bootstrap.Carousel(document.getElementById('productCarousel'));
+    carousel.to(index);
+}
+
+// Auto-play do carrossel
+document.addEventListener('DOMContentLoaded', function() {
+    const carousel = document.getElementById('productCarousel');
+    if (carousel) {
+        const bsCarousel = new bootstrap.Carousel(carousel, {
+            interval: 5000, // 5 segundos
+            wrap: true
+        });
+    }
+});
+</script>
+
+<%- include('../partials/footer') %> 
