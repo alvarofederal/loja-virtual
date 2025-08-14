@@ -84,8 +84,8 @@
                 <div class="col-md-6">
                   <p><strong>Método de Pagamento:</strong> <%= order.payment_method || 'Não informado' %></p>
                   <p><strong>ID do Pagamento:</strong> <%= order.payment_id || 'Não informado' %></p>
-                  <p><strong>Valor Total:</strong> R$ <%= (order.total_amount ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></p>
-                  <p><strong>Frete:</strong> R$ <%= parseFloat(order.shipping_amount).toFixed(2) %></p>
+                  <p><strong>Valor Total:</strong> R$ <%= (order.total_amount && !isNaN(parseFloat(order.total_amount)) ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></p>
+                  <p><strong>Frete:</strong> R$ <%= (order.shipping_amount && !isNaN(parseFloat(order.shipping_amount)) ? parseFloat(order.shipping_amount).toFixed(2) : '0.00') %></p>
                 </div>
               </div>
             </div>
@@ -126,23 +126,23 @@
                             </div>
                           </td>
                           <td><%= item.quantity %></td>
-                          <td>R$ <%= parseFloat(item.price).toFixed(2) %></td>
-                          <td>R$ <%= (parseFloat(item.price) * item.quantity).toFixed(2) %></td>
+                          <td>R$ <%= (item.unit_price && !isNaN(parseFloat(item.unit_price)) ? parseFloat(item.unit_price).toFixed(2) : '0.00') %></td>
+                          <td>R$ <%= (item.unit_price && !isNaN(parseFloat(item.unit_price)) ? (parseFloat(item.unit_price) * item.quantity).toFixed(2) : '0.00') %></td>
                         </tr>
                       <% }) %>
                     </tbody>
                     <tfoot>
                       <tr>
                         <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
-                        <td>R$ <%= (order.total_amount && order.shipping_amount ? (parseFloat(order.total_amount) - parseFloat(order.shipping_amount)).toFixed(2) : '0.00') %></td>
+                        <td>R$ <%= (order.total_amount && order.shipping_amount && !isNaN(parseFloat(order.total_amount)) && !isNaN(parseFloat(order.shipping_amount)) ? (parseFloat(order.total_amount) - parseFloat(order.shipping_amount)).toFixed(2) : '0.00') %></td>
                       </tr>
                       <tr>
                         <td colspan="3" class="text-end"><strong>Frete:</strong></td>
-                        <td>R$ <%= parseFloat(order.shipping_amount).toFixed(2) %></td>
+                        <td>R$ <%= (order.shipping_amount && !isNaN(parseFloat(order.shipping_amount)) ? parseFloat(order.shipping_amount).toFixed(2) : '0.00') %></td>
                       </tr>
                       <tr>
                         <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                        <td><strong>R$ <%= (order.total_amount ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></strong></td>
+                        <td><strong>R$ <%= (order.total_amount && !isNaN(parseFloat(order.total_amount)) ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></strong></td>
                       </tr>
                     </tfoot>
                   </table>

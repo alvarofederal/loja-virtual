@@ -66,9 +66,9 @@
                                                  </div>
                                             </div>
                                         </td>
-                                        <td>R$ <%= parseFloat(item.unit_price).toFixed(2) %></td>
+                                        <td>R$ <%= (item.unit_price && !isNaN(parseFloat(item.unit_price)) ? parseFloat(item.unit_price).toFixed(2) : '0.00') %></td>
                                         <td><%= item.quantity %></td>
-                                        <td>R$ <%= parseFloat(item.total_price).toFixed(2) %></td>
+                                        <td>R$ <%= (item.total_price && !isNaN(parseFloat(item.total_price)) ? parseFloat(item.total_price).toFixed(2) : '0.00') %></td>
                                     </tr>
                                 <% }); %>
                             </tbody>
@@ -76,7 +76,7 @@
                     </div>
 
                     <div class="text-end">
-                        <h4>Total: R$ <%= (order.total_amount ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></h4>
+                        <h4>Total: R$ <%= (order.total_amount && !isNaN(parseFloat(order.total_amount)) ? parseFloat(order.total_amount).toFixed(2) : '0.00') %></h4>
                     </div>
                 </div>
             </div>

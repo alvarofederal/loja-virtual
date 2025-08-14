@@ -1,12 +1,9 @@
 import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'dbarteetradicao',
+  process.env.DB_NAME || 'loja_virtual',
   process.env.DB_USER || 'postgres',
-  process.env.DB_PASSWORD || 'postgres',
+  process.env.DB_PASSWORD || 'sua_senha',
   {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
@@ -18,10 +15,11 @@ const sequelize = new Sequelize(
       acquire: 30000,
       idle: 10000
     },
-    define: {
-      timestamps: true,
-      underscored: true,
-      freezeTableName: true
+    dialectOptions: {
+      ssl: process.env.NODE_ENV === 'production' ? {
+        require: true,
+        rejectUnauthorized: false
+      } : false
     }
   }
 );
